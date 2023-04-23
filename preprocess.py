@@ -10,7 +10,8 @@ In processing and analysis of textual data in data science, the first thing that
 * removing punctuation
 * breaking hyphenated tokens into separate words
 
-Furthermore, given a large body of text (known as a "corpus", from latin), we build a "lexicon": a set of all unique words found in the corpus.  This is like an English dictionary but without the definitions (just the words themselves). This is why we use a Python set and not a Python dictionary.
+Furthermore, given a large body of text (known as a "corpus", from latin), we build a "lexicon": a set of all unique words found in the corpus.
+This is like an English dictionary but without the definitions (just the words themselves). This is why we use a Python set and not a Python dictionary.
 
 Given an input document that has been preprocessed, we finally:
 * replace all numbers (e.g., 157) with a fixed token, such as "NUM"
@@ -39,7 +40,15 @@ Given a list of lines, modify each line by:
 
 
 def preprocess_lines(lines):
-    pass
+    for i in range(len(lines)): #loop through the lines but with the position(index)
+        line = lines[i] #get the line in the index we are at
+        line = line.lower().replace('-', ' ') #convert line to lower, then replace hyphen with space
+        newline = '' #holder var initialized as empty string
+        for char in line: #loop though each of the characters in the line
+            if char == ' ' or char.isalnum(): #if the char is space or is alphanumeric
+                newline+=char #add to the holder variable
+        lines[i] = newline #replace line at index with new line
+    return lines
 
 
 """
@@ -48,7 +57,10 @@ Given a list of preprocessed lines, return a new lexicon (i.e., a set of all uni
 
 
 def create_lexicon(lines):
-    lexicon = None
+    lexicon = set() #create a set called lexicon
+    for line in lines: #loop through lines
+        words = line.split(' ') #split the line into individual words and add to set
+        lexicon.update(set(words))
     return lexicon
 
 
@@ -66,6 +78,15 @@ For each tweet
 def filter_tweet_words(tweets, lexicon):
     NUMBER = 'NUM'
     UNKNOWN = 'UNK'
+    for i, tweet in enumerate(tweets): #loop through tweets
+        words = tweet.split(' ') #split tweet into individual words
+        for j, word in enumerate(words): #loop through words
+            if word.isdigit(): #if the word is a digit replace it with the value of the variable NUMBER
+                words[j] = NUMBER
+            elif word not in lexicon: #if the word is not in the lexicon replace it with UNKNOWN
+                words[j] = UNKNOWN
+        tweets[i] = ' '.join(words) #join words with spaces
+
 
 
 """
@@ -83,3 +104,11 @@ def main():
     print('\nProblem: Preprocess\n')
     CORPUS_FILENAME = 'corpus.txt'
     TWEETS_FILENAME = 'tweets.txt'
+    corpus = read_lines(CORPUS_FILENAME)
+    tweets = read_lines(TWEETS_FILENAME)
+    preprocess_lines(corpus)
+    preprocess_lines(tweets)
+
+    lexicon = create_lexicon(corpus)
+    filter_tweet_words(tweets, lexicon)
+    print(tweets)
